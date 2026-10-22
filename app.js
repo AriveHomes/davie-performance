@@ -8,6 +8,12 @@ const categories={
  "Core & Cardio":["core","abs","abdominals","cardio"],
  "Cardio":["cardio"]
 };
+const session={started:0,elapsed:0,restEnd:0,restRemaining:90};
+const pad=n=>String(n).padStart(2,"0");
+const clock=s=>`${pad(Math.floor(s/3600))}:${pad(Math.floor(s/60)%60)}:${pad(s%60)}`;
+function tick(){const now=Date.now();const sec=session.started?Math.floor((now-session.started)/1000)+session.elapsed:session.elapsed;$("workoutClock").textContent=clock(sec);if(session.restEnd){session.restRemaining=Math.max(0,Math.ceil((session.restEnd-now)/1000));if(!session.restRemaining){session.restEnd=0;$("restStart").textContent="START REST";}}$("restClock").textContent=pad(Math.floor(session.restRemaining/60))+":"+pad(session.restRemaining%60);}
+function startRest(){session.restRemaining=Number($("restLength").value);session.restEnd=Date.now()+session.restRemaining*1000;$("restStart").textContent="RESTART REST";tick();}
+function renderProgress(){const name=$("chartExercise").value;const months=new Map();for(const w of app.workouts.filter(w=>w.exercise===name)){const month=String(w.date||"").slice(0,7);const score=Number(w.weight)||0;if(/^\d{4}-\d{2}$/.test(month))months.set(month,Math.max(months.get(month)||0,score));}const entries=[...months].sort().slice(-6),max=Math.max(1,...entries.map(x=>x[1]));$("chart").innerHTML=entries.map(([m,v])=>`<div class="barwrap"><div class="bar" title="${safe(m)}: ${v} lb" style="height:${Math.max(3,v/max*105)}px"></div><small>${safe(m.slice(5))}<br>${fmt(v)} lb</small></div>`).join("")||"<span class=\"note\">Connect your existing workout history to see monthly progress.</span>";}
 const fmt=v=>Math.round(Number(v)||0).toLocaleString();
 function safe(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function status(id,message){$(id).textContent=message;}
@@ -19,6 +25,11 @@ function init(){
  $("focus").onchange=updateExercises;
  $("exercise").onchange=showExercise;
  $("historyExercise").onchange=showHistory;
+ $("startWorkout").onclick=()=>{if(session.started)return;session.elapsed=0;session.started=Date.now();$("startWorkout").disabled=true;$("finishWorkout").disabled=false;$("workoutState").textContent="Workout in progress";tick();};
+ $("finishWorkout").onclick=()=>{if(!session.started)return;session.elapsed+=Math.floor((Date.now()-session.started)/1000);session.started=0;$("startWorkout").disabled=false;$("finishWorkout").disabled=true;$("workoutState").textContent="Session finished · "+clock(session.elapsed)+" · Duration shown here only until backend is connected.";session.restEnd=0;tick();};
+ $("restStart").onclick=startRest;$("restReset").onclick=()=>{session.restEnd=0;session.restRemaining=Number($("restLength").value);$("restStart").textContent="START REST";tick();};$("restLength").onchange=()=>{if(!session.restEnd){session.restRemaining=Number($("restLength").value);tick();}};
+ $("repeatSet").onclick=()=>{const name=$("exercise").value;const last=app.workouts.filter(w=>w.exercise===name).at(-1);if(!last){status("setStatus","No previous set loaded yet.");return;}$("weight").value=last.weight;$("reps").value=last.reps;status("setStatus","Last set filled in. Saving requires the backend connection.");};
+ $("chartExercise").onchange=renderProgress;setInterval(tick,1000);tick();
  $("save").onclick=()=>status("setStatus","Live saving is not connected yet. Your Google Sheet was not changed.");
  $("saveCardio").onclick=()=>status("cardioStatus","Live saving is not connected yet. Your Google Sheet was not changed.");
  render();
@@ -30,6 +41,7 @@ function render(){
  $("days").textContent=new Set(app.workouts.map(w=>w.date)).size;
  $("count").textContent=fmt(app.library.length);
  updateExercises();
+ $("chartExercise").replaceChildren(...app.library.map(e=>new Option(e.name,e.name)));$("historyExercise").replaceChildren(...app.library.map(e=>new Option(e.name,e.name)));renderProgress();
  $("sessions").textContent="Connect your Google Sheet to load previous sessions.";
  $("cardioHistory").textContent="Connect your Google Sheet to load cardio.";
 }

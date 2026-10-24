@@ -55,3 +55,30 @@ Responses from the POST endpoint: `{data:<result>}` or `{error:"message"}`. Call
 ## Privacy and deploy
 
 GitHub repository source visibility is private. Hosting a webpage and protecting data access are separate concerns; keep Google Sheet access restricted. GitHub alone does not automatically update the separate Apps Script deployment.
+
+
+## GitHub-to-Google deployment is prepared (not activated)
+
+A manual GitHub Actions workflow now builds the interface, embeds the app JavaScript in Apps Script's HTML, includes a signed-in `google.script.run` bridge, pushes the backend, and optionally publishes a web-app version.
+
+Workflow: [DAVIE PERFORMANCE - Google Apps Script](../../actions/workflows/apps-script.yml)
+
+**Do not target your original live Apps Script project for the first test.** `clasp push` overwrites the target Apps Script project's code. Create a **new dedicated standalone Apps Script project** first; the old project and the Google Sheet will remain untouched.
+
+### One-time Google authorization and repository configuration
+
+1. Open https://script.google.com/home/projects/create and create a standalone project called `DAVIE PERFORMANCE - TEST`. In its **Project Settings**, copy the **Script ID** (this is NOT the `/exec` deployment URL).
+2. Open https://script.google.com/home/usersettings and enable the **Google Apps Script API**.
+3. On a trusted computer with Node.js installed, run `npm install --global @google/clasp` followed by `clasp login`. Sign in to the Google account that owns/has access to the spreadsheet. Google stores its authentication file at `~/.clasprc.json` (on Windows typically `%USERPROFILE%\.clasprc.json`).
+4. In this repository's **Settings → Secrets and variables → Actions → New repository secret**, add:
+   - `CLASP_SCRIPT_ID`: the test project's Script ID.
+   - `CLASPRC_JSON`: the entire contents of the locally generated `.clasprc.json`. **Never paste these credentials into ChatGPT or commit them to GitHub**; add them directly to GitHub Secrets and protect your GitHub account with 2FA.
+5. Open **Actions → DAVIE PERFORMANCE - Google Apps Script → Run workflow**. Keep `publish` unchecked on the first run. Confirm the code push succeeds.
+6. Run again with `publish` checked to create a new private-access deployment. The workflow log should show the new deployment information. Open it while signed into your Google account, authorize Sheet access, and test reading old exercises. Test a new saved set only after confirming the right spreadsheet and app.
+7. After validation, optionally set `CLASP_DEPLOYMENT_ID` to the **new** app deployment ID in GitHub Secrets. Subsequent publish runs then update its existing URL, rather than creating a new URL.
+
+### After the first successful tests
+
+We can switch the workflow from manual deployment to automatically deploying on GitHub pushes. Until then, publishing is intentionally manual to prevent accidentally replacing the existing production app.
+
+The Google authorization token in `CLASPRC_JSON` is sensitive; granting it access to GitHub Actions requires your consent. If your Google Workspace administrator blocks the Apps Script API or CI-based OAuth, this method might need an administrator-approved alternative.

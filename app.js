@@ -25,7 +25,7 @@ async function invoke(method,payload){
 async function refresh(){const raw=await invoke("getAppData",{});if(!raw||!Array.isArray(raw.workouts)||!Array.isArray(raw.library)||typeof raw.today!=="string")throw Error("Backend returned incomplete workout data.");app.workouts=raw.workouts;app.library=raw.library;app.sessions=raw.sessions||[];app.cardio=raw.cardio||[];app.today=raw.today;app.online=true;render();}
 async function verifySet(saved){
  const identifier=key(saved);await refresh();
- const match=app.workouts.some(r=>identifier!==null?String(key(r))===String(identifier):r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set)&&Number(r.weight)===Number(saved.weight)&&Number(r.reps)===Number(saved.reps));
+ const match=app.workouts.some(r=>(identifier!==null?String(key(r))===String(identifier):r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set))&&r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set)&&Number(r.weight)===Number(saved.weight)&&Number(r.reps)===Number(saved.reps));
  if(!match)throw Error("The server responded, but the set was not found on reload. Please check the sheet before retrying.");
 }
 async function guarded(fn){if(app.busy)return;app.busy=true;["save","saveCardio"].forEach(id=>$(id).disabled=true);try{await fn()}finally{app.busy=false;["save","saveCardio"].forEach(id=>$(id).disabled=false)}}

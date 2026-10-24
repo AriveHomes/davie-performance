@@ -1,0 +1,70 @@
+name: DAVIE PERFORMANCE - Google Apps Script
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish a live web app version? Keep false for the first code push."
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  apps-script:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check scripts/build-apps-script.mjs
+
+      - name: Build Google Apps Script package
+        run: node scripts/build-apps-script.mjs
+
+      - name: Verify deployment secrets are present
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          CLASP_SCRIPT_ID: ${{ secrets.CLASP_SCRIPT_ID }}
+        run: |
+          if [ -z "$CLASPRC_JSON" ] || [ -z "$CLASP_SCRIPT_ID" ]; then
+            echo "::error::Set CLASPRC_JSON and CLASP_SCRIPT_ID as GitHub Actions secrets before running."
+            exit 1
+          fi
+
+      - name: Install clasp
+        run: npm install --global @google/clasp
+
+      - name: Configure authenticated Google Apps Script access
+        env:
+          CLASPRC_JSON: ${{ secrets.CLASPRC_JSON }}
+          CLASP_SCRIPT_ID: ${{ secrets.CLASP_SCRIPT_ID }}
+        run: |
+          printf '%s' "$CLASPRC_JSON" > "$HOME/.clasprc.json"
+          chmod 600 "$HOME/.clasprc.json"
+          node -e 'const fs=require("fs");fs.writeFileSync(".clasp.json",JSON.stringify({scriptId:process.env.CLASP_SCRIPT_ID,rootDir:"dist"}))'
+
+      - name: Push code to configured Apps Script project
+        run: clasp push --force
+
+      - name: Publish web app version if requested
+        if: ${{ inputs.publish }}
+        env:
+          DEPLOYMENT_ID: ${{ secrets.CLASP_DEPLOYMENT_ID }}
+        run: |
+          if [ -n "$DEPLOYMENT_ID" ]; then
+            clasp create-deployment --deploymentId "$DEPLOYMENT_ID" --description "DAVIE PERFORMANCE ${GITHUB_SHA}"
+          else
+            clasp create-deployment --description "DAVIE PERFORMANCE ${GITHUB_SHA}"
+          fi

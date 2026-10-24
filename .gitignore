@@ -1,0 +1,8 @@
+# Local credentials and generated Google Apps Script output
+.clasprc.json
+.clasp.json
+dist/
+node_modules/
+.env
+.env.*
+!.env.example

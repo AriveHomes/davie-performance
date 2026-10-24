@@ -10,7 +10,7 @@ function dpBook_(){return SpreadsheetApp.openById(DP_SHEET_ID);}
 function dpDate_(value) {
   if(value instanceof Date)return Utilities.formatDate(value,DP_TZ,'yyyy-MM-dd');
   const str=String(value||'');
-  return /^\\d{4}-\\d{2}-\\d{2}/.test(str)?str.slice(0,10):str;
+  return /^\d{4}-\d{2}-\d{2}/.test(str)?str.slice(0,10):str;
 }
 function dpToday_(){return Utilities.formatDate(new Date(),DP_TZ,'yyyy-MM-dd');}
 function dpNumber_(v){const n=Number(v);return isFinite(n)?n:0;}

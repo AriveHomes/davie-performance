@@ -1,23 +1,115 @@
 <!DOCTYPE html><html><head><meta charset="UTF-8"><base target="_top"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
 :root{--green:#123b30;--cream:#f8f5ed;--red:#b84241;--gold:#d7b879;--ink:#193e33;--muted:#7e9289;font-family:'DM Sans',Arial,sans-serif;color:var(--ink)}*{box-sizing:border-box}body{background:var(--cream);margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}header{background:var(--green);color:#fff;padding:24px max(20px,calc((100% - 1170px)/2));border-bottom:6px solid var(--gold)}header .eyebrow{letter-spacing:3px;color:var(--gold);font-size:11px;font-weight:800;text-transform:uppercase}.brand{font-family:'Playfair Display',Georgia,serif;font-size:clamp(32px,5vw,50px);margin:8px 0}.subtitle{color:#c0d6cc;font-size:14px}.header-row{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}.shell{max-width:1170px;margin:0 auto;padding:24px 18px 65px}.top{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}.title{font:700 26px 'Playfair Display',Georgia,serif;margin:0}.muted{color:var(--muted)}.btn{border:0;background:var(--red);color:white;border-radius:11px;padding:11px 16px;font-weight:800}.btn.ghost{background:white;color:var(--ink);border:1px solid #d7e1d9}.btn.green{background:var(--green)}.btn:disabled{opacity:.5;cursor:wait}.actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.sync{font-size:12px;padding:8px 12px;border-radius:20px;background:#214d40;color:#dff5e8}.sync.bad{background:#b84241}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}.stat{background:white;border:1px solid #e8e9df;border-radius:16px;padding:19px}.stat .num{font-size:29px;font-weight:800}.stat .label{font-size:12px;color:var(--muted)}.kid-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:11px}.kid{border-radius:16px;border:1px solid #e5e9e1;background:white;padding:16px 8px;text-align:center;min-width:0;color:var(--ink)}.kid b{display:block}.kid .emoji{font-size:26px;display:block;margin-bottom:7px}.kid.active{border:2px solid var(--red);background:#fff5f2}.kid small{color:var(--muted)}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:23px 0 14px}.toolbar input{flex:1;min-width:180px}.toolbar select{min-width:160px}input,select,textarea{padding:11px 12px;border:1px solid #d5e1d8;border-radius:10px;background:#fff;color:var(--ink);max-width:100%}.gift-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.gift{border:1px solid #e7e9e0;background:white;border-radius:16px;padding:17px;box-shadow:0 4px 20px #0a2c1f09}.gift h3{margin:4px 0 8px;font-size:17px;overflow-wrap:anywhere}.tag{display:inline-block;border-radius:20px;background:#eaf4ef;padding:5px 9px;color:#2e604e;font-size:11px;font-weight:700}.spot{border-radius:11px;background:#f7f2e5;padding:11px;margin-top:13px;font-size:13px;line-height:1.65}.spot b{color:#68572e}.smallrow{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin-top:13px;color:var(--muted)}.gift-actions{display:flex;gap:8px;margin-top:15px}.gift-actions button{border:0;border-radius:9px;padding:9px 13px;background:#f0f5f0;color:var(--ink);font-weight:700}.gift-actions .del{color:#b23e3f;background:#fff0ed}.empty{text-align:center;padding:45px 12px;color:var(--muted);background:white;border-radius:16px;grid-column:1/-1}.empty .emoji{font-size:40px}dialog{border:0;border-radius:20px;width:min(570px,95vw);max-height:90vh;overflow:auto;box-shadow:0 20px 70px #102e2666;padding:24px;color:var(--ink)}dialog::backdrop{background:#102e26a6}dialog h2{font:700 25px 'Playfair Display',Georgia,serif;margin:0 0 18px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.form-grid label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800}.wide{grid-column:1/-1}.dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:19px}.foot{font-size:12px;margin-top:21px;color:#84988c}#toast{position:fixed;bottom:18px;right:18px;background:#164335;color:white;padding:13px 16px;border-radius:13px;box-shadow:0 7px 25px #163f3533;display:none;z-index:9;max-width:90vw}#toast.bad{background:#ac4140}@media(max-width:850px){.gift-grid{grid-template-columns:repeat(2,1fr)}.kid-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:570px){.stat-grid{grid-template-columns:repeat(2,1fr)}.kid-grid{grid-template-columns:repeat(2,1fr)}.gift-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.wide{grid-column:1}dialog{padding:18px}.stat .num{font-size:23px}}
-</style></head><body><header><div class="header-row"><div><div class="eyebrow">❄ The Davie Family · 2026 ❄</div><h1 class="brand">The Christmas Vault 🎁</h1><div class="subtitle">Brendan & Emily's secret headquarters for all the hidden gifts</div></div><div id="sync" class="sync">● Connecting to Google Sheet…</div></div></header><main class="shell"><div class="top"><div><h2 class="title">Santa's Secret Dashboard ✨</h2><div class="muted">Every gift. Every hiding spot. Zero Christmas Eve panic.</div></div><div class="actions"><button class="btn ghost" id="refresh">↻ Refresh</button><button class="btn" id="add">＋ Add a gift</button></div></div><section class="stat-grid"><div class="stat"><div class="num" id="count">—</div><div class="label">Gifts tracked</div></div><div class="stat"><div class="num" id="covered">—</div><div class="label">Kids covered</div></div><div class="stat"><div class="num" id="wrapped">—</div><div class="label">Wrapped / ready</div></div><div class="stat"><div class="num" id="spent">—</div><div class="label">Total spent</div></div></section><section id="kids" class="kid-grid"></section><div class="toolbar"><input id="search" placeholder="🔎 Search gifts, rooms, hiding spots…" aria-label="Search gifts"><select id="status"><option value="">All statuses</option></select></div><section class="gift-grid" id="gifts"><div class="empty">Connecting to the family gift list…</div></section><div class="foot">🔒 Gift information stays in your private Google Sheet. Save confirmation appears only after a write succeeds. This view refreshes every 30 seconds while open.</div></main><dialog id="modal"><form id="form"><h2 id="formTitle">Add a gift 🎁</h2><div class="form-grid"><label class="wide">Gift name<input id="name" required maxlength="140" placeholder="e.g. Easton Ghost softball bat"></label><label>For which kid?<select id="child"></select></label><label>Gift status<select id="giftStatus"></select></label><label>Hidden room / area<input id="room" maxlength="120" placeholder="Upstairs storage"></label><label>Exact hiding spot<input id="location" maxlength="260" placeholder="Blue tote behind winter coats"></label><label>Price ($)<input id="price" type="number" min="0" max="999999" step="0.01" value="0"></label><label>Bought by<select id="buyer"><option>Brendan</option><option>Emily</option><option selected>Both</option></select></label><label class="wide">Notes<textarea id="notes" rows="3" maxlength="700" placeholder="Delivery date, wrapping notes, etc."></textarea></label></div><div class="dialog-actions"><button type="button" class="btn ghost" id="cancel">Cancel</button><button type="submit" class="btn" id="save">Save to family Sheet ✨</button></div></form></dialog><div id="toast" role="status"></div><script>
-'use strict';const $=id=>document.getElementById(id),KIDS=['Marley','Macyn','McCall','Emery','Grayson'],EMOJI=['🥎','🎀','❄️','🦌','🎮'],STATUSES=['Idea','Ordered','Purchased','Hidden','Wrapped','Under Tree','Given'];let gifts=[],filter='',editing=null,busy=false,loaded=false;
+
+[hidden]{display:none!important}
+.vault-gate{min-height:100dvh;padding:25px 15px;display:grid;place-items:center;background:radial-gradient(circle at 15% 10%,#274e3d 0%,transparent 32%),radial-gradient(circle at 90% 80%,#613832 0%,transparent 25%),#102f27;color:#fff}
+.gate-panel{width:min(455px,100%);border:1px solid rgba(231,212,162,.35);border-radius:26px;background:#fffaf0;color:#173c30;padding:34px 29px;box-shadow:0 28px 85px #0005;text-align:center}
+.gate-icon{font-size:64px;line-height:1.2;margin-bottom:9px}
+.gate-eyebrow{font-size:11px;font-weight:900;color:#ae4946;letter-spacing:2.7px;text-transform:uppercase}
+.gate-panel h1{font:700 37px 'Playfair Display',Georgia,serif;margin:11px 0 8px}
+.gate-panel p{color:#6f8378;font-size:14px;line-height:1.55}
+.gate-panel label{display:block;text-align:left;margin:25px 0 8px;font-weight:800;font-size:13px}
+.gate-panel input{width:100%;background:#fff;border:1px solid #ced8ce;font-size:16px;min-height:49px}
+.gate-panel .btn{width:100%;margin-top:14px;min-height:49px;background:#b84241}
+.gate-panel .btn:focus-visible{outline:3px solid #d7b879;outline-offset:3px}
+.gate-error{min-height:1.5em;color:#ab2f30!important;font-weight:700;margin:11px 0 2px}
+.gate-note{font-size:12px!important;margin:18px 0 0}
+.gate-ornaments{color:#d7b879;letter-spacing:13px;margin-top:20px;font-size:17px}
+#lockNow{margin-left:8px;border:1px solid #d6b77c;color:#fff;background:transparent;font-size:13px;padding:7px 10px;border-radius:10px;font-weight:700;cursor:pointer}
+@media(max-width:520px){.gate-panel{padding:30px 23px}.gate-panel h1{font-size:32px}}
+</style></head><body>
+<!-- No gift data is loaded until the family password is checked by Apps Script. -->
+<section id="gate" class="vault-gate" aria-labelledby="gateTitle">
+  <form id="unlockForm" class="gate-panel" autocomplete="off">
+    <div class="gate-icon" aria-hidden="true">🎄🔐</div>
+    <div class="gate-eyebrow">Brendan &amp; Emily's private holiday headquarters</div>
+    <h1 id="gateTitle">The Christmas Vault</h1>
+    <p>Shhh… Santa's secret hiding spots are inside.</p>
+    <label for="familyPassword">Family password</label>
+    <input id="familyPassword" type="password" required autocomplete="off" placeholder="Enter your secret family password" maxlength="250">
+    <button id="unlockButton" class="btn" type="submit">🔑 Unlock the Vault</button>
+    <p class="gate-error" id="gateError" role="alert" aria-live="polite"></p>
+    <p class="gate-note">Password required every time you open or return to this page. Your password isn't saved on your device.</p>
+    <div class="gate-ornaments" aria-hidden="true">✦ ❄ ✦</div>
+  </form>
+</section>
+<div id="vaultApp" hidden>
+<header><div class="header-row"><div><div class="eyebrow">❄ The Davie Family · 2026 ❄</div><h1 class="brand">The Christmas Vault 🎁</h1><div class="subtitle">Brendan & Emily's secret headquarters for all the hidden gifts</div></div><div id="sync" class="sync">● Connecting to Google Sheet…</div></div></header><main class="shell"><div class="top"><div><h2 class="title">Santa's Secret Dashboard ✨</h2><div class="muted">Every gift. Every hiding spot. Zero Christmas Eve panic.</div></div><div class="actions"><button class="btn ghost" id="lockNow" type="button">🔒 Lock</button><button class="btn ghost" id="refresh">↻ Refresh</button><button class="btn" id="add">＋ Add a gift</button></div></div><section class="stat-grid"><div class="stat"><div class="num" id="count">—</div><div class="label">Gifts tracked</div></div><div class="stat"><div class="num" id="covered">—</div><div class="label">Kids covered</div></div><div class="stat"><div class="num" id="wrapped">—</div><div class="label">Wrapped / ready</div></div><div class="stat"><div class="num" id="spent">—</div><div class="label">Total spent</div></div></section><section id="kids" class="kid-grid"></section><div class="toolbar"><input id="search" placeholder="🔎 Search gifts, rooms, hiding spots…" aria-label="Search gifts"><select id="status"><option value="">All statuses</option></select></div><section class="gift-grid" id="gifts"><div class="empty">Connecting to the family gift list…</div></section><div class="foot">🔒 Gift information stays in your private Google Sheet. Save confirmation appears only after a write succeeds. This view refreshes every 30 seconds while open.</div></main><dialog id="modal"><form id="form"><h2 id="formTitle">Add a gift 🎁</h2><div class="form-grid"><label class="wide">Gift name<input id="name" required maxlength="140" placeholder="e.g. Easton Ghost softball bat"></label><label>For which kid?<select id="child"></select></label><label>Gift status<select id="giftStatus"></select></label><label>Hidden room / area<input id="room" maxlength="120" placeholder="Upstairs storage"></label><label>Exact hiding spot<input id="location" maxlength="260" placeholder="Blue tote behind winter coats"></label><label>Price ($)<input id="price" type="number" min="0" max="999999" step="0.01" value="0"></label><label>Bought by<select id="buyer"><option>Brendan</option><option>Emily</option><option selected>Both</option></select></label><label class="wide">Notes<textarea id="notes" rows="3" maxlength="700" placeholder="Delivery date, wrapping notes, etc."></textarea></label></div><div class="dialog-actions"><button type="button" class="btn ghost" id="cancel">Cancel</button><button type="submit" class="btn" id="save">Save to family Sheet ✨</button></div></form></dialog><div id="toast" role="status"></div>
+</div>
+<script>
+'use strict';const $=id=>document.getElementById(id),KIDS=['Marley','Macyn','McCall','Emery','Grayson'],EMOJI=['🥎','🎀','❄️','🦌','🎮'],STATUSES=['Idea','Ordered','Purchased','Hidden','Wrapped','Under Tree','Given'];let gifts=[],filter='',editing=null,busy=false,loaded=false,vaultPassword='',vaultEpoch=0,unlockPending=false;
 function node(tag,cls,txt){let el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el}
 function money(n){return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n||0)}
 function showToast(t,bad=false){const e=$('toast');e.textContent=t;e.className=bad?'bad':'';e.style.display='block';setTimeout(()=>e.style.display='none',4200)}
 function setSync(t,bad=false){const e=$('sync');e.textContent=t;e.className=bad?'sync bad':'sync'}
 function setBusy(v){busy=v;$('save').disabled=v;$('add').disabled=v;$('refresh').disabled=v;}
 function api(method,...args){return new Promise((resolve,reject)=>{google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(Error(e&&e.message||String(e))))[method](...args)})}
-async function refresh(silent=false){if(busy)return;setSync('● Syncing with Google Sheet…');try{const data=await api('getVault');gifts=data.gifts||[];loaded=true;render();setSync('● Synced • '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));if(!silent)showToast('Gift list refreshed ✓')}catch(e){setSync('● Sync error — try Refresh',true);if(!silent)showToast(e.message,true);if(!loaded)$('gifts').textContent='Could not access your private Gift Sheet. Sign in with the Google account that has permission.'}}
+async function refresh(silent=false){if(busy||!vaultPassword)return;const epoch=vaultEpoch;setSync('● Syncing with Google Sheet…');try{const data=await api('getVault',vaultPassword);if(epoch!==vaultEpoch||!vaultPassword)return;gifts=data.gifts||[];loaded=true;render();setSync('● Synced • '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));if(!silent)showToast('Gift list refreshed ✓')}catch(e){if(epoch!==vaultEpoch||!vaultPassword)return;setSync('● Sync error — try Refresh',true);if(!silent)showToast(e.message,true);if(!loaded)$('gifts').textContent='Could not access your private Gift Sheet. Sign in with the Google account that has permission.'}}
 function render(){const displayed=gifts.filter(g=>(!filter||g.child===filter)&&(!$('status').value||g.status===$('status').value)&&[g.name,g.child,g.room,g.location,g.notes].join(' ').toLowerCase().includes($('search').value.toLowerCase()));$('count').textContent=gifts.length;$('covered').textContent=new Set(gifts.map(g=>g.child)).size+'/5';$('wrapped').textContent=gifts.filter(g=>['Wrapped','Under Tree','Given'].includes(g.status)).length;$('spent').textContent=money(gifts.reduce((a,g)=>a+Number(g.price||0),0));
  const kids=$('kids');kids.replaceChildren();KIDS.forEach((k,i)=>{let btn=node('button','kid'+(filter===k?' active':''));btn.type='button';btn.append(node('span','emoji',EMOJI[i]),node('b','',k),node('small','',gifts.filter(g=>g.child===k).length+' gifts'));btn.onclick=()=>{filter=filter===k?'':k;render()};kids.append(btn)});
  const target=$('gifts');target.replaceChildren();if(!displayed.length){const e=node('div','empty');e.append(node('div','emoji','🎄'),node('div','','No gifts match this list yet. Add a present to start!'));target.append(e);return}
  displayed.slice().reverse().forEach(g=>{const card=node('article','gift');card.append(node('div','tag',g.child+' · '+g.status),node('h3','',g.name));const spot=node('div','spot');spot.append(node('b','','📍 Hiding location'),node('div','',g.room||'Room not recorded'),node('div','',g.location||'Exact spot not recorded'));card.append(spot);if(g.notes)card.append(node('p','muted',g.notes));const info=node('div','smallrow');info.append(node('span','',money(g.price)),node('span','',g.buyer||'Both'));card.append(info);const actions=node('div','gift-actions'),edit=node('button','','✏ Edit'),del=node('button','del','🗑 Delete');edit.onclick=()=>openForm(g);del.onclick=()=>remove(g);actions.append(edit,del);card.append(actions);target.append(card)})}
 function openForm(g=null){if(busy)return;editing=g?{...g}:null;$('formTitle').textContent=g?'Edit gift 🎁':'Add a gift 🎁';$('form').reset();$('name').value=g?.name||'';$('child').value=g?.child||KIDS[0];$('giftStatus').value=g?.status||'Idea';$('room').value=g?.room||'';$('location').value=g?.location||'';$('price').value=g?.price||0;$('buyer').value=g?.buyer||'Both';$('notes').value=g?.notes||'';$('modal').showModal()}
-async function remove(g){if(!confirm('Delete '+g.name+'? This change will sync for both phones.'))return;setBusy(true);setSync('● Deleting…');try{const r=await api('removeGift',g.id,g.version);gifts=r.gifts||[];render();setSync('● Synced');showToast('Gift removed for both phones ✓')}catch(e){setSync('● Sync error',true);showToast(e.message,true);await refresh(true)}finally{setBusy(false)}}
-$('form').onsubmit=async e=>{e.preventDefault();if(busy)return;const record={id:editing?.id||'',version:editing?.version||0,name:$('name').value,child:$('child').value,status:$('giftStatus').value,room:$('room').value,location:$('location').value,price:Number($('price').value)||0,buyer:$('buyer').value,notes:$('notes').value};setBusy(true);setSync('● Saving to Google Sheet…');try{const r=await api('saveGift',record);gifts=r.gifts||[];render();$('modal').close();setSync('● Synced');showToast('Saved to the family Sheet ✓')}catch(e){setSync('● Save failed',true);showToast('Not saved: '+e.message,true);await refresh(true)}finally{setBusy(false)}};
+async function remove(g){if(!confirm('Delete '+g.name+'? This change will sync for both phones.'))return;setBusy(true);setSync('● Deleting…');try{const epoch=vaultEpoch;const r=await api('removeGift',g.id,g.version,vaultPassword);if(epoch!==vaultEpoch||!vaultPassword)return;gifts=r.gifts||[];render();setSync('● Synced');showToast('Gift removed for both phones ✓')}catch(e){if(!vaultPassword)return;setSync('● Sync error',true);showToast(e.message,true);await refresh(true)}finally{setBusy(false)}}
+$('form').onsubmit=async e=>{e.preventDefault();if(busy)return;const record={id:editing?.id||'',version:editing?.version||0,name:$('name').value,child:$('child').value,status:$('giftStatus').value,room:$('room').value,location:$('location').value,price:Number($('price').value)||0,buyer:$('buyer').value,notes:$('notes').value};setBusy(true);setSync('● Saving to Google Sheet…');try{const epoch=vaultEpoch;const r=await api('saveGift',record,vaultPassword);if(epoch!==vaultEpoch||!vaultPassword)return;gifts=r.gifts||[];render();$('modal').close();setSync('● Synced');showToast('Saved to the family Sheet ✓')}catch(e){if(!vaultPassword)return;setSync('● Save failed',true);showToast('Not saved: '+e.message,true);await refresh(true)}finally{setBusy(false)}};
 $('refresh').onclick=()=>refresh();$('add').onclick=()=>openForm();$('cancel').onclick=()=>$('modal').close();$('search').oninput=render;$('status').onchange=render;
 KIDS.forEach(k=>$('child').append(new Option(k,k)));STATUSES.forEach(s=>{$('giftStatus').append(new Option(s,s));$('status').append(new Option(s,s))});
-refresh(true);setInterval(()=>{if(document.visibilityState==='visible'&&!busy&&!$('modal').open)refresh(true)},30000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!$('modal').open)refresh(true)});
+
+function lockVault(){
+  vaultEpoch++;
+  vaultPassword='';
+  gifts=[];loaded=false;filter='';editing=null;
+  $('vaultApp').hidden=true;
+  $('gate').hidden=false;
+  $('familyPassword').value='';
+  $('gateError').textContent='';
+  $('count').textContent='—';$('covered').textContent='—';$('wrapped').textContent='—';$('spent').textContent='—';
+  $('gifts').replaceChildren();
+  if($('modal').open)$('modal').close();
+  setSync('● Locked');
+}
+async function enterVault(event){
+  event.preventDefault();
+  if(unlockPending)return;
+  const proposed=$('familyPassword').value;
+  if(!proposed)return;
+  const epoch=vaultEpoch;
+  unlockPending=true;
+  $('unlockButton').disabled=true;
+  $('unlockButton').textContent='🔐 Checking password…';
+  $('gateError').textContent='';
+  try{
+    // The server checks the password BEFORE it accesses/returns any gift records.
+    const data=await api('unlockVault',proposed);
+    if(epoch!==vaultEpoch || document.visibilityState==='hidden')return;
+    vaultPassword=proposed;
+    $('familyPassword').value='';
+    gifts=data.gifts||[];
+    loaded=true;
+    $('gate').hidden=true;
+    $('vaultApp').hidden=false;
+    render();
+    setSync('● Synced • '+new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}));
+    $('search').focus();
+  }catch(err){
+    if(epoch!==vaultEpoch)return;
+    $('gateError').textContent=err?.message||'Could not unlock. Check the family password.';
+    $('familyPassword').value='';
+    $('familyPassword').focus();
+  }finally{
+    unlockPending=false;
+    $('unlockButton').disabled=false;
+    $('unlockButton').textContent='🔑 Unlock the Vault';
+  }
+}
+$('unlockForm').addEventListener('submit',enterVault);
+$('lockNow').onclick=()=>lockVault();
+// No localStorage, cookies, or sessionStorage: every new visit requires the password.
+window.addEventListener('pagehide',lockVault);
+window.addEventListener('pageshow',event=>{if(event.persisted)lockVault()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')lockVault()});
+setInterval(()=>{if(vaultPassword && document.visibilityState==='visible'&&!busy&&!$('modal').open)refresh(true)},30000);
+lockVault();
+
 </script></body></html>

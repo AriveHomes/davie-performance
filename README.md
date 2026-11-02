@@ -82,3 +82,15 @@ Workflow: [DAVIE PERFORMANCE - Google Apps Script](../../actions/workflows/apps-
 We can switch the workflow from manual deployment to automatically deploying on GitHub pushes. Until then, publishing is intentionally manual to prevent accidentally replacing the existing production app.
 
 The Google authorization token in `CLASPRC_JSON` is sensitive; granting it access to GitHub Actions requires your consent. If your Google Workspace administrator blocks the Apps Script API or CI-based OAuth, this method might need an administrator-approved alternative.
+
+## Utah football blackout redesign (test branch)
+
+Branch: `utah-utes-blackout-redesign`. This is **source code, not the deployed phone app**.
+
+- Keeps DAVIE PERFORMANCE name, workout logging, previous-set comparisons, edit history, and existing Google Sheets backend contract.
+- Replaces the blue theme with crimson/black collegiate football styling inspired by Utah, including an inline blackout-style U mark and a video-preview placeholder (no playback until videos are connected).
+- Includes theme and Apple mobile web-app metadata in `index.html`. **An iPhone Home Screen icon is not guaranteed from an SVG data URL**, especially under Google Apps Script's HTML service. A publicly served PNG/apple-touch-icon must be configured and verified after deployment; re-adding an existing Home Screen shortcut may be necessary.
+- Never publish this over the original Apps Script deployment before backup and real iPhone end-to-end tests of save, re-fetch, editing, exercise-name matching, and session resume.
+- To generate the Apps Script `Index.html` and `Code.gs` from source, run `node scripts/build-apps-script.mjs`. The generated files are in `dist/`.
+- GitHub alone does not grant direct access to the live Apps Script editor. A verified `clasp` connection or human deployment in the Google account is needed to install the built code. The existing GitHub Actions workflow also needs the configured test script ID and secrets.
+

@@ -47,6 +47,9 @@ function previousSets(name){
  return {date:date||"",rows:eligible.filter(r=>r.date===date).sort((a,b)=>Number(a.set)-Number(b.set))};
 }
 function showExercise(){
+ const preview=$("exercisePreviewTitle"),note=$("exercisePreviewNote");
+ if(preview)preview.textContent=($("exercise").value||"Exercise")+" · VIDEO PREVIEW";
+ if(note)note.textContent="2–3 second reference or personal clip · coming in a later version";
  const name=$("exercise").value,{date,rows:old}=previousSets(name),today=exerciseSets(name);
  text("pastDate",date?"· "+date:"");
  const maximum=Math.max(old.length,today.length,1),pairs=[];

@@ -129,10 +129,11 @@ function showChartChoices(){
  drawChart();showHistory();
 }
 function drawChart(){
- const name=$("chartExercise").value,months=new Map();
- for(const r of app.workouts.filter(r=>r.exercise===name)){const month=String(r.date||"").slice(0,7);if(/^\d{4}-\d{2}$/.test(month))months.set(month,Math.max(Number(r.weight)||0,months.get(month)||0))}
+ const name=$("chartExercise").value,timed=isTimed(name),months=new Map();
+ for(const r of app.workouts.filter(r=>r.exercise===name)){const month=String(r.date||"").slice(0,7);if(/^\d{4}-\d{2}$/.test(month))months.set(month,Math.max(timed?secondsOf(r):Number(r.weight)||0,months.get(month)||0))}
  const recent=[...months].sort().slice(-6),max=Math.max(1,...recent.map(x=>x[1]));
- $("chart").innerHTML=recent.map(([month,value])=>'<div class="barwrap"><div class="bar" title="'+safe(month)+': '+fmt(value)+' lb" style="height:'+Math.max(3,value/max*105)+'px"></div><small>'+safe(month)+'<br>'+fmt(value)+' lb</small></div>').join("")||'<p class="note">No historical chart data loaded.</p>';
+ $("chartNote").textContent=timed?"Longest hold per month (minutes:seconds).":"Best set per month. Two sets or three sets both count.";
+ $("chart").innerHTML=recent.map(([month,value])=>{const label=timed?timeLabel(value):fmt(value)+" lb";return '<div class="barwrap"><div class="bar" title="'+safe(month)+': '+label+'" style="height:'+Math.max(3,value/max*105)+'px"></div><small>'+safe(month)+'<br>'+label+'</small></div>'}).join("")||'<p class="note">No historical chart data loaded.</p>';
 }
 function showHistory(){$("history").innerHTML=app.workouts.filter(r=>r.exercise===$("historyExercise").value).slice().reverse().map(r=>'<div class="item"><strong>'+showSet(r)+'</strong><p>'+safe(r.date)+' · Set '+fmt(r.set)+'</p></div>').join("")||'<p class="note">No exercise history loaded.</p>'}
 function showCardio(){$("cardioHistory").innerHTML=app.cardio.slice().reverse().slice(0,20).map(r=>'<div class="item"><strong>'+safe(r.exercise)+'</strong><p>'+safe(r.date)+' · '+fmt(r.minutes)+' min · '+fmt(r.distance)+' mi</p></div>').join("")||'<p class="note">No cardio history loaded.</p>'}

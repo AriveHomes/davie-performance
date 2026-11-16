@@ -44,7 +44,8 @@ function updateExercises(keep=true){
 const isTimed=name=>String(name||"").trim().toLowerCase()==="plank";
 const secondsOf=r=>Number(r.durationSeconds)||0;
 const timeLabel=sec=>{const t=Math.max(0,Math.round(Number(sec)||0));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
-const showSet=r=>isTimed(r.exercise)?timeLabel(secondsOf(r)):(fmt(r.weight)+" lb × "+fmt(r.reps)+" reps");
+const durationLabel=sec=>{const t=Math.max(0,Math.round(Number(sec)||0));return t%60===0?Math.floor(t/60)+" "+(t===60?"minute":"minutes"):t<60?t+" "+(t===1?"second":"seconds"):timeLabel(t)+" min"};
+const showSet=r=>isTimed(r.exercise)?fmt(r.weight)+" lb × "+durationLabel(secondsOf(r)):(fmt(r.weight)+" lb × "+fmt(r.reps)+" reps");
 function updateInputMode(name){
  const timed=isTimed(name);
  $("repsInputs").classList.toggle("hide",timed);
@@ -69,7 +70,7 @@ function showExercise(){
  const next=old[today.length],best=old.slice().sort((a,b)=>Number(b.weight)-Number(a.weight)||Number(b.reps)-Number(a.reps))[0];
  text("target",isTimed(name)?(next?"BEAT NEXT HOLD: "+timeLabel(secondsOf(next)+5):best?"BEAT LAST TIME: "+timeLabel(Math.max(...old.map(secondsOf))+5):"No previous hold — establish your baseline."):(next?"BEAT NEXT SET: "+fmt(next.weight)+" lb × "+fmt(Number(next.reps)+1):best?"BEAT LAST TIME: "+fmt(best.weight)+" lb × "+fmt(Number(best.reps)+1):"No previous session — establish your baseline."));
  text("todayCount",today.length+" SETS");
- $("todaySets").innerHTML=today.length?today.map((r,i)=>'<div class="set-row"><span class="check">✓</span><span class="metric">'+(isTimed(name)?timeLabel(secondsOf(r))+' hold':fmt(r.weight)+' lb')+'</span><span class="metric">'+(isTimed(name)?'Timed':fmt(r.reps)+' reps')+'</span><button type="button" class="editbtn mini" data-edit-current="'+i+'">Edit</button></div>').join(""):'<span class="note">No sets saved for this exercise yet.</span>';
+ $("todaySets").innerHTML=today.length?today.map((r,i)=>'<div class="set-row"><span class="check">✓</span><span class="metric">'+fmt(r.weight)+' lb'+'</span><span class="metric">'+(isTimed(name)?durationLabel(secondsOf(r)):fmt(r.reps)+' reps')+'</span><button type="button" class="editbtn mini" data-edit-current="'+i+'">Edit</button></div>').join(""):'<span class="note">No sets saved for this exercise yet.</span>';
  $("todaySets").querySelectorAll("[data-edit-current]").forEach(btn=>btn.onclick=()=>editSet(today[Number(btn.dataset.editCurrent)],"editStatus"));
  if(isTimed(name)){const recent=today.at(-1)||old[0];const total=recent?secondsOf(recent):60;$("holdMinutes").value=Math.floor(total/60);$("holdSeconds").value=total%60}
  if(today.length){$("weight").value=today.at(-1).weight;$("reps").value=today.at(-1).reps}
@@ -101,7 +102,7 @@ function showWholeDay(){
  const rows=app.workouts.filter(isToday),groups=new Map();
  for(const r of rows){if(!groups.has(r.exercise))groups.set(r.exercise,[]);groups.get(r.exercise).push(r)}
  text("todaySummary",rows.length+" SETS");text("todayTabCount",rows.length?"("+rows.length+")":"");
- $("allTodaySets").innerHTML=groups.size?[...groups].map(([name,sets],groupIndex)=>'<div class="today-group"><div class="labelrow"><h3>'+safe(name)+'</h3><span class="persistent-tag">'+sets.length+' SETS</span></div>'+sets.map((r,i)=>'<div class="entry"><span class="saved">✓ '+safe(r.set)+'</span><strong>'+(isTimed(r.exercise)?'BODYWEIGHT':fmt(r.weight)+' lb')+'</strong><strong>'+(isTimed(r.exercise)?timeLabel(secondsOf(r)):fmt(r.reps)+' reps')+'</strong><button class="mini" type="button" data-group="'+groupIndex+'" data-row="'+i+'">Edit</button></div>').join("")+'</div>').join(""):'<p class="note">No confirmed sets today.</p>';
+ $("allTodaySets").innerHTML=groups.size?[...groups].map(([name,sets],groupIndex)=>'<div class="today-group"><div class="labelrow"><h3>'+safe(name)+'</h3><span class="persistent-tag">'+sets.length+' SETS</span></div>'+sets.map((r,i)=>'<div class="entry"><span class="saved">✓ '+safe(r.set)+'</span><strong>'+(fmt(r.weight)+' lb')+'</strong><strong>'+(isTimed(r.exercise)?durationLabel(secondsOf(r)):fmt(r.reps)+' reps')+'</strong><button class="mini" type="button" data-group="'+groupIndex+'" data-row="'+i+'">Edit</button></div>').join("")+'</div>').join(""):'<p class="note">No confirmed sets today.</p>';
  const items=[...groups];$("allTodaySets").querySelectorAll("[data-group]").forEach(button=>button.onclick=()=>editSet(items[Number(button.dataset.group)][1][Number(button.dataset.row)],"todayEditStatus"));
 }
 async function saveSet(){await guarded(async()=>{

@@ -25,7 +25,7 @@ async function invoke(method,payload){
 async function refresh(){const raw=await invoke("getAppData",{});if(!raw||!Array.isArray(raw.workouts)||!Array.isArray(raw.library)||typeof raw.today!=="string")throw Error("Backend returned incomplete workout data.");app.workouts=raw.workouts;app.library=raw.library;app.sessions=raw.sessions||[];app.cardio=raw.cardio||[];app.today=raw.today;app.online=true;render();}
 async function verifySet(saved){
  const identifier=key(saved);await refresh();
- const match=app.workouts.some(r=>(identifier!==null?String(key(r))===String(identifier):r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set))&&r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set)&&Number(r.weight)===Number(saved.weight)&&Number(r.reps)===Number(saved.reps));
+ const match=app.workouts.some(r=>(identifier!==null?String(key(r))===String(identifier):r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set))&&r.date===saved.date&&r.exercise===saved.exercise&&Number(r.set)===Number(saved.set)&&Number(r.weight)===Number(saved.weight)&&Number(r.reps)===Number(saved.reps)&&secondsOf(r)===secondsOf(saved));
  if(!match)throw Error("The server responded, but the set was not found on reload. Please check the sheet before retrying.");
 }
 async function guarded(fn){if(app.busy)return;app.busy=true;["save","saveCardio"].forEach(id=>$(id).disabled=true);try{await fn()}finally{app.busy=false;["save","saveCardio"].forEach(id=>$(id).disabled=false)}}
@@ -41,6 +41,17 @@ function updateExercises(keep=true){
  if(options.some(e=>e.name===old))list.value=old;
  showExercise();
 }
+const isTimed=name=>String(name||"").trim().toLowerCase()==="plank";
+const secondsOf=r=>Number(r.durationSeconds)||0;
+const timeLabel=sec=>{const t=Math.max(0,Math.round(Number(sec)||0));return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")};
+const durationLabel=sec=>{const t=Math.max(0,Math.round(Number(sec)||0));return t%60===0?Math.floor(t/60)+" "+(t===60?"minute":"minutes"):t<60?t+" "+(t===1?"second":"seconds"):timeLabel(t)+" min"};
+const showSet=r=>isTimed(r.exercise)?fmt(r.weight)+" lb × "+durationLabel(secondsOf(r)):(fmt(r.weight)+" lb × "+fmt(r.reps)+" reps");
+function updateInputMode(name){
+ const timed=isTimed(name);
+ $("repsInputs").classList.toggle("hide",timed);
+ $("durationInputs").classList.toggle("hide",!timed);
+ $("save").textContent=timed?"+ SAVE TIMED HOLD":"+ SAVE SET";
+}
 function previousSets(name){
  const eligible=app.workouts.filter(r=>r.exercise===name&&r.date<app.today);
  const date=eligible.map(r=>r.date).sort().at(-1);
@@ -48,58 +59,64 @@ function previousSets(name){
 }
 function showExercise(){
  const name=$("exercise").value,{date,rows:old}=previousSets(name),today=exerciseSets(name);
+ updateInputMode(name);
  text("pastDate",date?"· "+date:"");
  const maximum=Math.max(old.length,today.length,1),pairs=[];
  for(let i=0;i<maximum;i++){
-  const p=old[i],t=today[i],improved=p&&t&&(Number(t.weight)>Number(p.weight)||(Number(t.weight)===Number(p.weight)&&Number(t.reps)>Number(p.reps)));
-  pairs.push('<div class="compare-row"><b>'+(i+1)+'</b><span class="prior">'+(p?fmt(p.weight)+' lb × '+fmt(p.reps):'—')+'</span><span class="current">'+(t?fmt(t.weight)+' lb × '+fmt(t.reps)+(improved?' <em>↑ PR</em>':''):'—')+'</span></div>');
+  const p=old[i],t=today[i],improved=p&&t&&(isTimed(name)?secondsOf(t)>secondsOf(p):(Number(t.weight)>Number(p.weight)||(Number(t.weight)===Number(p.weight)&&Number(t.reps)>Number(p.reps))));
+  pairs.push('<div class="compare-row"><b>'+(i+1)+'</b><span class="prior">'+(p?showSet(p):'—')+'</span><span class="current">'+(t?showSet(t)+(improved?' <em>↑ PR</em>':''):'—')+'</span></div>');
  }
  $("comparisonRows").innerHTML=pairs.join("");
  const next=old[today.length],best=old.slice().sort((a,b)=>Number(b.weight)-Number(a.weight)||Number(b.reps)-Number(a.reps))[0];
- text("target",next?"BEAT NEXT SET: "+fmt(next.weight)+" lb × "+fmt(Number(next.reps)+1):best?"BEAT LAST TIME: "+fmt(best.weight)+" lb × "+fmt(Number(best.reps)+1):"No previous session — establish your baseline.");
+ text("target",isTimed(name)?(next?"BEAT NEXT HOLD: "+timeLabel(secondsOf(next)+5):best?"BEAT LAST TIME: "+timeLabel(Math.max(...old.map(secondsOf))+5):"No previous hold — establish your baseline."):(next?"BEAT NEXT SET: "+fmt(next.weight)+" lb × "+fmt(Number(next.reps)+1):best?"BEAT LAST TIME: "+fmt(best.weight)+" lb × "+fmt(Number(best.reps)+1):"No previous session — establish your baseline."));
  text("todayCount",today.length+" SETS");
- $("todaySets").innerHTML=today.length?today.map((r,i)=>'<div class="set-row"><span class="check">✓</span><span class="metric">'+fmt(r.weight)+' lb</span><span class="metric">'+fmt(r.reps)+' reps</span><button type="button" class="editbtn mini" data-edit-current="'+i+'">Edit</button></div>').join(""):'<span class="note">No sets saved for this exercise yet.</span>';
+ $("todaySets").innerHTML=today.length?today.map((r,i)=>'<div class="set-row"><span class="check">✓</span><span class="metric">'+fmt(r.weight)+' lb'+'</span><span class="metric">'+(isTimed(name)?durationLabel(secondsOf(r)):fmt(r.reps)+' reps')+'</span><button type="button" class="editbtn mini" data-edit-current="'+i+'">Edit</button></div>').join(""):'<span class="note">No sets saved for this exercise yet.</span>';
  $("todaySets").querySelectorAll("[data-edit-current]").forEach(btn=>btn.onclick=()=>editSet(today[Number(btn.dataset.editCurrent)],"editStatus"));
+ if(isTimed(name)){const recent=today.at(-1)||old[0];const total=recent?secondsOf(recent):60;$("holdMinutes").value=Math.floor(total/60);$("holdSeconds").value=total%60}
  if(today.length){$("weight").value=today.at(-1).weight;$("reps").value=today.at(-1).reps}
  else if(old.length){$("weight").value=old[0].weight;$("reps").value=old[0].reps}
  else{$("weight").value="";$("reps").value=""}
 }
 function closeEditors(){document.querySelectorAll(".edit-pane").forEach(p=>p.remove())}
 function editSet(row,statusId){
- closeEditors();const container=statusId==="editStatus"?$("todaySets"):$("allTodaySets");
+ closeEditors();const timed=isTimed(row.exercise),container=statusId==="editStatus"?$("todaySets"):$("allTodaySets");
  const pane=document.createElement("section");pane.className="edit-pane";
- pane.innerHTML='<h3>Correct Set '+safe(row.set)+' · '+safe(row.exercise)+'</h3><div class="pair"><div class="field"><label>WEIGHT (LB)</label><input aria-label="Corrected weight" type="number" min="0" max="1500" step="0.5"></div><div class="field"><label>REPS</label><input aria-label="Corrected reps" type="number" min="1" max="500" step="1"></div></div><div class="editbar"><button class="secondary" type="button">Cancel</button><button class="primary" type="button">SAVE CORRECTION</button></div>';
- const inputs=pane.querySelectorAll("input");inputs[0].value=row.weight;inputs[1].value=row.reps;
+ pane.innerHTML='<h3>Correct Set '+safe(row.set)+' · '+safe(row.exercise)+'</h3>'+(timed?'<div class="pair"><div class="field"><label>MINUTES</label><input aria-label="Corrected minutes" type="number" min="0" max="120" step="1"></div><div class="field"><label>SECONDS</label><input aria-label="Corrected seconds" type="number" min="0" max="59" step="1"></div></div>':'<div class="pair"><div class="field"><label>WEIGHT (LB)</label><input aria-label="Corrected weight" type="number" min="0" max="1500" step="0.5"></div><div class="field"><label>REPS</label><input aria-label="Corrected reps" type="number" min="1" max="500" step="1"></div></div>')+'<div class="editbar"><button class="secondary" type="button">Cancel</button><button class="primary" type="button">SAVE CORRECTION</button></div>';
+ const inputs=pane.querySelectorAll("input");
+ if(timed){inputs[0].value=Math.floor(secondsOf(row)/60);inputs[1].value=secondsOf(row)%60}else{inputs[0].value=row.weight;inputs[1].value=row.reps}
  pane.querySelector(".secondary").onclick=()=>pane.remove();
  pane.querySelector(".primary").onclick=()=>guarded(async()=>{
-  const weight=Number(inputs[0].value),reps=Number(inputs[1].value);
-  if(inputs[0].value===""||!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<=0){message(statusId,"Enter valid weight and reps.","error");return}
-  const id=key(row);if(id===null){message(statusId,"Editing requires a stable row ID from the backend to prevent changing the wrong set.","error");return}
+  const a=Number(inputs[0].value),b=Number(inputs[1].value);
+  const durationSeconds=timed?a*60+b:0,weight=timed?0:a,reps=timed?1:b;
+  const valid=timed?inputs[0].value!==""&&inputs[1].value!==""&&Number.isInteger(a)&&a>=0&&a<=120&&Number.isInteger(b)&&b>=0&&b<60&&durationSeconds>0:inputs[0].value!==""&&inputs[1].value!==""&&Number.isFinite(weight)&&weight>=0&&Number.isInteger(reps)&&reps>0;
+  if(!valid){message(statusId,timed?"Enter valid minutes and seconds.":"Enter valid weight and reps.","error");return}
+  const id=key(row);if(id===null){message(statusId,"Editing requires a stable row ID from the backend.","error");return}
   try{
-   const confirmed=await invoke("updateSet",{id,weight,reps,expected:{weight:Number(row.weight),reps:Number(row.reps)}});
+   const confirmed=await invoke("updateSet",{id,weight,reps,durationSeconds,expected:{weight:Number(row.weight),reps:Number(row.reps),durationSeconds:secondsOf(row)}});
    if(!confirmed||!confirmed.saved||String(key(confirmed.record))!==String(id))throw Error("The backend did not confirm the edit.");
-   await verifySet(confirmed.record);
-   closeEditors();message(statusId,"✓ Correction saved and verified.","success");
+   await verifySet(confirmed.record);closeEditors();message(statusId,"✓ Correction saved and verified.","success");
   }catch(e){message(statusId,e.message,"error")}
- });
- container.appendChild(pane);pane.scrollIntoView({block:"nearest",behavior:"smooth"});
+ });container.appendChild(pane);pane.scrollIntoView({block:"nearest",behavior:"smooth"});
 }
 function showWholeDay(){
  const rows=app.workouts.filter(isToday),groups=new Map();
  for(const r of rows){if(!groups.has(r.exercise))groups.set(r.exercise,[]);groups.get(r.exercise).push(r)}
  text("todaySummary",rows.length+" SETS");text("todayTabCount",rows.length?"("+rows.length+")":"");
- $("allTodaySets").innerHTML=groups.size?[...groups].map(([name,sets],groupIndex)=>'<div class="today-group"><div class="labelrow"><h3>'+safe(name)+'</h3><span class="persistent-tag">'+sets.length+' SETS</span></div>'+sets.map((r,i)=>'<div class="entry"><span class="saved">✓ '+safe(r.set)+'</span><strong>'+fmt(r.weight)+' lb</strong><strong>'+fmt(r.reps)+' reps</strong><button class="mini" type="button" data-group="'+groupIndex+'" data-row="'+i+'">Edit</button></div>').join("")+'</div>').join(""):'<p class="note">No confirmed sets today.</p>';
+ $("allTodaySets").innerHTML=groups.size?[...groups].map(([name,sets],groupIndex)=>'<div class="today-group"><div class="labelrow"><h3>'+safe(name)+'</h3><span class="persistent-tag">'+sets.length+' SETS</span></div>'+sets.map((r,i)=>'<div class="entry"><span class="saved">✓ '+safe(r.set)+'</span><strong>'+(fmt(r.weight)+' lb')+'</strong><strong>'+(isTimed(r.exercise)?durationLabel(secondsOf(r)):fmt(r.reps)+' reps')+'</strong><button class="mini" type="button" data-group="'+groupIndex+'" data-row="'+i+'">Edit</button></div>').join("")+'</div>').join(""):'<p class="note">No confirmed sets today.</p>';
  const items=[...groups];$("allTodaySets").querySelectorAll("[data-group]").forEach(button=>button.onclick=()=>editSet(items[Number(button.dataset.group)][1][Number(button.dataset.row)],"todayEditStatus"));
 }
 async function saveSet(){await guarded(async()=>{
- const name=$("exercise").value,weight=Number($("weight").value),reps=Number($("reps").value);
- if(!name||$("weight").value===""||$("reps").value===""||!Number.isFinite(weight)||weight<0||!Number.isInteger(reps)||reps<1){message("setStatus","Choose an exercise and enter a valid weight and rep count.","error");return}
- const focus=$("focus").value;
+ const name=$("exercise").value,timed=isTimed(name);
+ const minutes=Number($("holdMinutes").value),seconds=Number($("holdSeconds").value);
+ const durationSeconds=timed?minutes*60+seconds:0;
+ const weight=timed?0:Number($("weight").value),reps=timed?1:Number($("reps").value);
+ const valid=timed?$("holdMinutes").value!==""&&$("holdSeconds").value!==""&&Number.isInteger(minutes)&&minutes>=0&&minutes<=120&&Number.isInteger(seconds)&&seconds>=0&&seconds<60&&durationSeconds>0:$("weight").value!==""&&$("reps").value!==""&&Number.isFinite(weight)&&weight>=0&&Number.isInteger(reps)&&reps>=1;
+ if(!name||!valid){message("setStatus",timed?"Enter a valid minutes-and-seconds hold.":"Choose an exercise and enter valid weight and reps.","error");return}
  try{
-  const confirmation=await invoke("saveSet",{exercise:name,focus,weight,reps,clientRequestId:crypto.randomUUID()});
+  const confirmation=await invoke("saveSet",{exercise:name,focus:$("focus").value,weight,reps,durationSeconds,clientRequestId:crypto.randomUUID()});
   if(!confirmation||!confirmation.saved||!confirmation.record)throw Error("The backend did not confirm the save.");
   await verifySet(confirmation.record);
-  message("setStatus","✓ Set saved and verified in your workout history.","success");startRest();
+  message("setStatus","✓ "+(timed?"Timed hold":"Set")+" saved and verified.","success");startRest();
  }catch(e){message("setStatus",e.message,"error")}
 })}
 function showSessions(){
@@ -113,12 +130,13 @@ function showChartChoices(){
  drawChart();showHistory();
 }
 function drawChart(){
- const name=$("chartExercise").value,months=new Map();
- for(const r of app.workouts.filter(r=>r.exercise===name)){const month=String(r.date||"").slice(0,7);if(/^\d{4}-\d{2}$/.test(month))months.set(month,Math.max(Number(r.weight)||0,months.get(month)||0))}
+ const name=$("chartExercise").value,timed=isTimed(name),months=new Map();
+ for(const r of app.workouts.filter(r=>r.exercise===name)){const month=String(r.date||"").slice(0,7);if(/^\d{4}-\d{2}$/.test(month))months.set(month,Math.max(timed?secondsOf(r):Number(r.weight)||0,months.get(month)||0))}
  const recent=[...months].sort().slice(-6),max=Math.max(1,...recent.map(x=>x[1]));
- $("chart").innerHTML=recent.map(([month,value])=>'<div class="barwrap"><div class="bar" title="'+safe(month)+': '+fmt(value)+' lb" style="height:'+Math.max(3,value/max*105)+'px"></div><small>'+safe(month)+'<br>'+fmt(value)+' lb</small></div>').join("")||'<p class="note">No historical chart data loaded.</p>';
+ $("chartNote").textContent=timed?"Longest hold per month (minutes:seconds).":"Best set per month. Two sets or three sets both count.";
+ $("chart").innerHTML=recent.map(([month,value])=>{const label=timed?timeLabel(value):fmt(value)+" lb";return '<div class="barwrap"><div class="bar" title="'+safe(month)+': '+label+'" style="height:'+Math.max(3,value/max*105)+'px"></div><small>'+safe(month)+'<br>'+label+'</small></div>'}).join("")||'<p class="note">No historical chart data loaded.</p>';
 }
-function showHistory(){$("history").innerHTML=app.workouts.filter(r=>r.exercise===$("historyExercise").value).slice().reverse().map(r=>'<div class="item"><strong>'+fmt(r.weight)+' lb × '+fmt(r.reps)+'</strong><p>'+safe(r.date)+' · Set '+fmt(r.set)+'</p></div>').join("")||'<p class="note">No exercise history loaded.</p>'}
+function showHistory(){$("history").innerHTML=app.workouts.filter(r=>r.exercise===$("historyExercise").value).slice().reverse().map(r=>'<div class="item"><strong>'+showSet(r)+'</strong><p>'+safe(r.date)+' · Set '+fmt(r.set)+'</p></div>').join("")||'<p class="note">No exercise history loaded.</p>'}
 function showCardio(){$("cardioHistory").innerHTML=app.cardio.slice().reverse().slice(0,20).map(r=>'<div class="item"><strong>'+safe(r.exercise)+'</strong><p>'+safe(r.date)+' · '+fmt(r.minutes)+' min · '+fmt(r.distance)+' mi</p></div>').join("")||'<p class="note">No cardio history loaded.</p>'}
 function tick(){
  const now=Date.now(),elapsed=session.started?session.elapsed+Math.floor((now-session.started)/1000):session.elapsed;
@@ -139,7 +157,7 @@ function init(){
  $("finishWorkout").onclick=()=>{if(!session.started)return;session.elapsed+=Math.floor((Date.now()-session.started)/1000);session.started=0;$("startWorkout").disabled=false;$("finishWorkout").disabled=true;text("workoutState","Session finished. Only confirmed sets are stored.");session.restEnd=0;tick()};
  $("restStart").onclick=startRest;$("restReset").onclick=()=>{session.restEnd=0;session.restRemaining=Number($("restLength").value);text("restStart","START REST");tick()};
  $("restLength").onchange=()=>{if(!session.restEnd){session.restRemaining=Number($("restLength").value);tick()}};
- $("repeatSet").onclick=()=>{const list=exerciseSets($("exercise").value),old=previousSets($("exercise").value).rows,last=list.at(-1)||old.at(-1);if(!last){message("setStatus","No previous set loaded.","error");return}$("weight").value=last.weight;$("reps").value=last.reps};
+ $("repeatSet").onclick=()=>{const list=exerciseSets($("exercise").value),old=previousSets($("exercise").value).rows,last=list.at(-1)||old.at(-1);if(!last){message("setStatus","No previous set loaded.","error");return}if(isTimed(last.exercise)){$("holdMinutes").value=Math.floor(secondsOf(last)/60);$("holdSeconds").value=secondsOf(last)%60}else{$("weight").value=last.weight;$("reps").value=last.reps}};
  setInterval(tick,1000);tick();
  message("setStatus","Connecting to workout history…");
  refresh().then(()=>message("setStatus","Workout history loaded.")).catch(e=>message("setStatus",e.message,"error"));
